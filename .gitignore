@@ -196,3 +196,5 @@ cython_debug/
 
 public_dataset/
 .idea/
+*.png
+dataset.csv
