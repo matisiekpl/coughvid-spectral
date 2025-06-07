@@ -86,7 +86,7 @@ These results indicate a strong performance on binary cough classification using
 
 ---
 
-Limitations and Future Work
+## Limitations and Future Work
 - The model currently only uses MFCC features. Including other audio features (e.g., spectral contrast, rolloff, or zero-crossing rate) may improve performance.
 - The classification task is binary (e.g., healthy vs. sick), whereas the dataset potentially supports multi-class classification (e.g., COVID-19, asthma, symptomatic).
 - No audio data augmentation has been applied. Future work may benefit from techniques like pitch shifting, time stretching, or background noise injection.
