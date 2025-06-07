@@ -89,6 +89,8 @@ def train(data, epochs=10):
         print(
             f'Epoch {epoch + 1}/{epochs}, Train Loss: {epoch_loss:.4f}, Train Acc: {epoch_acc:.4f}')
 
+    torch.save(model.state_dict(), 'model.pth')
+
     print('Evaluating model...')
     model.eval()
     all_predictions = []
@@ -108,9 +110,30 @@ def train(data, epochs=10):
     print("\nClassification Report:")
     print(classification_report(y_true, y_pred))
 
-    f1 = f1_score(y_true, y_pred)
-    print(f"\nF1 Score: {f1:.4f}")
 
-    print("\nConfusion Matrix:")
-    cm = confusion_matrix(y_true, y_pred)
-    print(cm)
+def eval(data, uuid):
+    df = data[data['uuid'] == uuid]
+
+    X = df.iloc[:, 1:-1]
+    y = df.iloc[:, -1]
+
+    y = y.apply(lambda x: 1 if x == 'COVID-19' else 0)
+
+    scaler = StandardScaler()
+    X = scaler.fit_transform(X)
+
+    X_tensor = torch.FloatTensor(X)
+    y_tensor = torch.FloatTensor(y.values)
+
+    dataset = TensorDataset(X_tensor, y_tensor)
+
+    model = DenseNet(X.shape[1])
+    model.load_state_dict(torch.load('model.pth'))
+
+    model.eval()
+    with torch.no_grad():
+        for idx, (inputs, labels) in enumerate(dataset):
+            outputs = model(inputs)
+            predicted = (outputs > 0.5).float()
+            print('Segment', idx, 'Predicted:', predicted.item(), 'Actual:', labels.item())
+
