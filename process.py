@@ -4,6 +4,7 @@ import os
 import librosa
 import numpy as np
 import pandas as pd
+import kagglehub
 from tqdm import tqdm
 
 ROOT = './public_dataset/'
@@ -11,6 +12,8 @@ audio_length = 22050
 
 
 def load_dataset(take=None):
+    ROOT = kagglehub.dataset_download("nasrulhakim86/coughvid-wav") + '/public_dataset/'
+    print(f'Using dataset from {ROOT}')
     json_files = []
     for file in os.listdir(ROOT):
         if file.endswith('.json'):
