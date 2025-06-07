@@ -151,4 +151,3 @@ def eval(data, uuid):
             outputs = model(inputs)
             predicted = (outputs > 0.5).float()
             print('Segment', idx, 'Predicted:', predicted.item(), 'Actual:', labels.item())
-

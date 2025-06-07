@@ -7,12 +7,11 @@ import pandas as pd
 import kagglehub
 from tqdm import tqdm
 
-ROOT = './public_dataset/'
+ROOT = kagglehub.dataset_download("nasrulhakim86/coughvid-wav") + '/public_dataset/'
 audio_length = 22050
 
 
 def load_dataset(take=None):
-    ROOT = kagglehub.dataset_download("nasrulhakim86/coughvid-wav") + '/public_dataset/'
     print(f'Using dataset from {ROOT}')
     json_files = []
     for file in os.listdir(ROOT):
@@ -104,7 +103,7 @@ def load_features(df):
     features, filenames = [], []
     for idx in tqdm(range(len(df))):
         filename = df.uuid.iloc[idx]
-        path = ROOT + filename + '.wav'
+        path = os.path.join(ROOT + filename + '.wav')
 
         audio, sample_rate = librosa.load(path, mono=True)
         # Segment each audio into individual coughs using a hysteresis comparator on the signal power
