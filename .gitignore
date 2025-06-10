@@ -200,3 +200,5 @@ public_dataset/
 dataset.csv
 model.pth
 *.DS_Store
+classification_report.png
+

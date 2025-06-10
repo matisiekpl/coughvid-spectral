@@ -1,9 +1,8 @@
 import os.path
-
 import pandas
-
 from nn import train
 from process import aggregate_features, load_dataset, load_features
+from optimize import optimize_hyperparameters
 
 
 def create_dataset():
@@ -22,4 +21,8 @@ def create_dataset():
 
 if __name__ == '__main__':
     data = create_dataset()
-    train(data)
+    
+    print("Starting hyperparameter optimization...")
+    best_params = optimize_hyperparameters(data, n_trials=50)
+    print("\nTraining model with optimized hyperparameters...")
+    train(data, hyperparams=best_params)

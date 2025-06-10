@@ -9,22 +9,23 @@ from torch.utils.data import DataLoader, TensorDataset
 
 
 class DenseNet(nn.Module):
-    def __init__(self, input_dim):
+    def __init__(self, input_dim, hidden_size1=256, hidden_size2=128, hidden_size3=64, hidden_size4=32,
+                 dropout_rate1=0.3, dropout_rate2=0.3, dropout_rate3=0.3, dropout_rate4=0.2):
         super(DenseNet, self).__init__()
         self.model = nn.Sequential(
-            nn.Linear(input_dim, 256),
+            nn.Linear(input_dim, hidden_size1),
             nn.ReLU(),
-            nn.Dropout(0.3),
-            nn.Linear(256, 128),
+            nn.Dropout(dropout_rate1),
+            nn.Linear(hidden_size1, hidden_size2),
             nn.ReLU(),
-            nn.Dropout(0.3),
-            nn.Linear(128, 64),
+            nn.Dropout(dropout_rate2),
+            nn.Linear(hidden_size2, hidden_size3),
             nn.ReLU(),
-            nn.Dropout(0.3),
-            nn.Linear(64, 32),
+            nn.Dropout(dropout_rate3),
+            nn.Linear(hidden_size3, hidden_size4),
             nn.ReLU(),
-            nn.Dropout(0.2),
-            nn.Linear(32, 1),
+            nn.Dropout(dropout_rate4),
+            nn.Linear(hidden_size4, 1),
             nn.Sigmoid()
         )
 
@@ -32,7 +33,7 @@ class DenseNet(nn.Module):
         return self.model(x)
 
 
-def train(data, epochs=10):
+def train(data, epochs=10, hyperparams=None):
     data.groupby('status').sample(n=2185, replace=True)
 
     X = data.iloc[:, 1:-1]
@@ -54,14 +55,28 @@ def train(data, epochs=10):
     train_dataset = TensorDataset(x_train_tensor, y_train_tensor)
     test_dataset = TensorDataset(x_test_tensor, y_test_tensor)
 
-    batch_size = 32
+    batch_size = hyperparams['batch_size'] if hyperparams else 32
     train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
     test_loader = DataLoader(test_dataset, batch_size=batch_size)
 
     input_dim = x_train.shape[1]
-    model = DenseNet(input_dim)
+    
+    if hyperparams:
+        model = DenseNet(input_dim,
+                        hidden_size1=hyperparams['hidden_size1'],
+                        hidden_size2=hyperparams['hidden_size2'],
+                        hidden_size3=hyperparams['hidden_size3'],
+                        hidden_size4=hyperparams['hidden_size4'],
+                        dropout_rate1=hyperparams['dropout_rate1'],
+                        dropout_rate2=hyperparams['dropout_rate2'],
+                        dropout_rate3=hyperparams['dropout_rate3'],
+                        dropout_rate4=hyperparams['dropout_rate4'])
+        optimizer = optim.Adam(model.parameters(), lr=hyperparams['learning_rate'])
+    else:
+        model = DenseNet(input_dim)
+        optimizer = optim.Adam(model.parameters(), lr=0.001)
+
     criterion = nn.BCELoss()
-    optimizer = optim.Adam(model.parameters(), lr=0.001)
 
     print('Training model...')
     for epoch in range(epochs):
@@ -136,4 +151,3 @@ def eval(data, uuid):
             outputs = model(inputs)
             predicted = (outputs > 0.5).float()
             print('Segment', idx, 'Predicted:', predicted.item(), 'Actual:', labels.item())
-
